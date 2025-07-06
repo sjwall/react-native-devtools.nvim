@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "CommonJS",
-    "outDir": "dist",
+    "outDir": "rplugin/node",
     "strict": true,
     "esModuleInterop": true
   },
