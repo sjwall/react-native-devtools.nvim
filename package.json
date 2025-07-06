@@ -1,0 +1,14 @@
+{
+  "name": "react-native-devtools.nvim",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "neovim": "^4.10.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

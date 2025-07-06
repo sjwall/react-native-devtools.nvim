@@ -1,0 +1,4 @@
+{
+  "name": "react-native-devtools.nvim",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:dev-22-bookworm"
+}
