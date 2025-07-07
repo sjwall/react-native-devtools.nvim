@@ -8,20 +8,10 @@ React Native DevTools integrated into Neovim.
 -- lazy.nvim
 {
   'sjwall/react-native-devtools.nvim',
+  build = ':RNDevToolsBuild',
+  event = 'VeryLazy',
   dependencies = {
     'nvim-lua/plenary.nvim',
   },
 }
-```
-
-The [neovim](https://npmjs.com/packages/neovim) node package is required as this is a remote plugin:
-
-```sh
-npm install -g neovim
-```
-
-In Neovim update the remote plugin list:
-
-```neovim
-:UpdateRemotePlugins
 ```
