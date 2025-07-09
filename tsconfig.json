@@ -4,7 +4,11 @@
     "module": "CommonJS",
     "outDir": "rplugin/node",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@frontend/*": ["./react-native-devtools-frontend/front_end/*"]
+    }
   },
   "include": ["src"]
 }
