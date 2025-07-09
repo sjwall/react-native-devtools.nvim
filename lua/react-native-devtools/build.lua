@@ -42,11 +42,8 @@ function M:build()
   local build_directory = git_root and vim.fn.fnamemodify(git_root, ":h") or (dirname .. "/../../")
 
   if not self.canBuild() then
-    error("Building react-native-devtools.nvim requires node to be installed.", 2)
+    error("Building react-native-devtools.nvim requires npm to be installed.", 2)
   end
-
-  self:installNeovimNpmPackage()
-  self:installPackages()
 
   Job:new({
     command = "npm",
@@ -61,6 +58,12 @@ function M:build()
     end,
   }):sync(60000)
   vim.notify("build complete")
+end
+
+function M:setup()
+  self:installNeovimNpmPackage()
+  self:installPackages()
+  self:build()
 end
 
 return M
