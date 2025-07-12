@@ -6,13 +6,14 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@vscode/debugadapter": "^1.68.0",
     "neovim": "^4.10.1",
+    "neverthrow": "^8.2.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/node": "22",
     "@types/ws": "^8.18.1",
-    "react-native-devtools": "file:./react-native-devtools-frontend/",
     "typescript": "^5.0.0"
   }
 }

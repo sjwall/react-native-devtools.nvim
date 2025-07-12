@@ -1,9 +1,13 @@
 import { Neovim, NvimPlugin, Buffer } from 'neovim';
 import WebSocket from 'ws';
+import { TargetManager } from './TargetManager';
+import { Target } from './types/Target';
+import { ApiError } from './types/ApiError';
 
 module.exports = async (plugin: NvimPlugin) => {
   plugin.setOptions({ dev: true });
   const nvim = plugin.nvim;
+  const targetManager = new TargetManager("http://localhost:8081")
   let ws: WebSocket | null = null;
   let buffer: Buffer | null = null
 
@@ -75,6 +79,18 @@ module.exports = async (plugin: NvimPlugin) => {
     }
     return 'WebSocket not active';
   });
+
+  plugin.registerFunction('RefreshTargetList', async () => {
+    const result = await targetManager.refresh()
+    result.match(
+      async (targets) => {
+        await plugin.nvim.outWriteLine(JSON.stringify(targets))
+      },
+      async (error) => {
+        await plugin.nvim.outWriteLine(`Failed to refresh, ${error.name} ${error.message}`)
+      },
+    );
+  })
 
   plugin.registerCommand('HelloTS', async () => {
     const nvim = plugin.nvim;
