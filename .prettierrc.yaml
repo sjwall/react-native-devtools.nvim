@@ -1,0 +1,12 @@
+bracketSameLine: true
+bracketSpacing: false
+semi: false
+singleAttributePerLine: true
+singleQuote: true
+importOrder:
+  - ^react
+  - ^react-native
+  - '^node:'
+  - <THIRD_PARTY_MODULES>
+plugins:
+  - '@trivago/prettier-plugin-sort-imports'

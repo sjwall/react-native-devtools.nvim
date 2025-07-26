@@ -14,9 +14,11 @@
     "ws": "^8.18.3"
   },
   "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/chrome": "^0.1.0",
     "@types/node": "22",
     "@types/ws": "^8.18.1",
+    "prettier": "^3.6.2",
     "typescript": "^5.8.2"
   }
 }
