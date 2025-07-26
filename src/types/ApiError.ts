@@ -4,17 +4,17 @@ export class HttpError extends Error {
     public readonly status: number,
     public readonly body?: any,
   ) {
-    super(message);
-    this.name = "HttpError";
+    super(message)
+    this.name = 'HttpError'
   }
 }
 
 export class NetworkError extends Error {
   constructor(public readonly originalError: Error) {
-    super("Network error occurred.");
-    this.name = "NetworkError";
-    this.message = originalError.message;
+    super('Network error occurred.')
+    this.name = 'NetworkError'
+    this.message = originalError.message
   }
 }
 
-export type ApiError = HttpError | NetworkError | Error;
+export type ApiError = HttpError | NetworkError | Error

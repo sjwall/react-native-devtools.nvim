@@ -1,19 +1,22 @@
 {
   "name": "react-native-devtools.nvim",
   "version": "0.1.0",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "esbuild src/index.ts --bundle --platform=node --outfile=rplugin/node/index.js --format=cjs",
+    "lint": "tsc"
   },
   "dependencies": {
     "@vscode/debugadapter": "^1.68.0",
+    "esbuild": "^0.25.6",
     "neovim": "^4.10.1",
     "neverthrow": "^8.2.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {
+    "@types/chrome": "^0.1.0",
     "@types/node": "22",
     "@types/ws": "^8.18.1",
-    "typescript": "^5.0.0"
+    "typescript": "^5.8.2"
   }
 }

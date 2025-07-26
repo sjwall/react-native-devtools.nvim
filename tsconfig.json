@@ -1,14 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "esnext",
     "module": "CommonJS",
+    // Fix errors in front_end
+    "useUnknownInCatchVariables": false,
     "outDir": "rplugin/node",
+    "noEmit": true,
     "strict": true,
+    "noImplicitAny": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "paths": {
       "@frontend/*": ["./react-native-devtools-frontend/front_end/*"]
     }
   },
-  "include": ["src"]
+  "include": ["./frontend-env.d.ts", "./global-env.d.ts", "src/index.js"]
 }
