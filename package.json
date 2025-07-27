@@ -4,7 +4,10 @@
   "main": "dist/src/index.js",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --platform=node --outfile=rplugin/node/index.js --format=cjs",
-    "lint": "tsc"
+    "lint": "tsc",
+    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "dev:build": "yarn run build --watch",
+    "dev": "yarn dev:tsc & yarn dev:build"
   },
   "dependencies": {
     "@vscode/debugadapter": "^1.68.0",
