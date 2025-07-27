@@ -1,7 +1,7 @@
-import {Target} from './types/Target'
-import {fetchData} from './utils/fetchData'
+import {Target} from '../types/Target'
+import {fetchData} from '../utils/fetchData'
 
-export class TargetManager {
+export class ManagerTargets {
   #host: string
 
   #targets: Target[] = []

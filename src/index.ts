@@ -1,8 +1,8 @@
 import {appendFileSync} from 'node:fs'
 import {Logger} from './Logger'
-import {TargetManager} from './TargetManager'
+import {ManagerTargets} from './targets/ManagerTargets'
 import {ApiError} from './types/ApiError'
-import {Target} from './types/Target'
+import {Target} from './targets/Target'
 import {type Message} from '@frontend/core/protocol_client/InspectorBackend'
 import {Neovim, NvimPlugin, Buffer} from 'neovim'
 import WebSocket from 'ws'
@@ -10,7 +10,7 @@ import WebSocket from 'ws'
 module.exports = async (plugin: NvimPlugin) => {
   plugin.setOptions({dev: true})
   const nvim = plugin.nvim
-  const targetManager = new TargetManager('http://localhost:8081')
+  const managerTargets = new ManagerTargets('http://localhost:8081')
   const logger = new Logger()
   let ws: WebSocket | null = null
   let buffer: Buffer | null = null
@@ -42,7 +42,7 @@ module.exports = async (plugin: NvimPlugin) => {
 
   plugin.registerFunction('StartWebSocketFeed', async () => {
     await logger.trace('StartWebSocketFeed')
-    const result = await targetManager.refresh()
+    const result = await managerTargets.refresh()
 
     await createConsoleBuffer()
 
@@ -123,7 +123,7 @@ module.exports = async (plugin: NvimPlugin) => {
   })
 
   plugin.registerFunction('RefreshTargetList', async () => {
-    const result = await targetManager.refresh()
+    const result = await managerTargets.refresh()
     result.match(
       async (targets) => {
         await plugin.nvim.outWriteLine(JSON.stringify(targets))
