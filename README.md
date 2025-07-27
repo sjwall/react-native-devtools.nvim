@@ -2,6 +2,12 @@
 
 React Native DevTools integrated into Neovim.
 
+## ✨ Features
+
+- Console log
+
+More coming soon...
+
 ## 📦 Installation
 
 ```lua
