@@ -1,8 +1,9 @@
 import {appendFileSync} from 'node:fs'
 import {Logger} from './Logger'
 import {ManagerTargets} from './targets/ManagerTargets'
-import {ApiError} from './types/ApiError'
 import {Target} from './targets/Target'
+import {setupTargets} from './targets/setupTargets'
+import {ApiError} from './types/ApiError'
 import {type Message} from '@frontend/core/protocol_client/InspectorBackend'
 import {Neovim, NvimPlugin, Buffer} from 'neovim'
 import WebSocket from 'ws'
@@ -14,6 +15,8 @@ module.exports = async (plugin: NvimPlugin) => {
   const logger = new Logger()
   let ws: WebSocket | null = null
   let buffer: Buffer | null = null
+
+  setupTargets(plugin, {managerTargets, logger})
 
   async function createConsoleBuffer() {
     await nvim.command('enew')

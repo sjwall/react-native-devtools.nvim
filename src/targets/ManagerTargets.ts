@@ -1,5 +1,5 @@
-import {Target} from '../types/Target'
 import {fetchData} from '../utils/fetchData'
+import {Target} from './Target'
 
 export class ManagerTargets {
   #host: string
