@@ -1,1 +1,3 @@
-react-native-devtools-frontend
+dist/
+react-native-devtools-frontend/
+rplugin/

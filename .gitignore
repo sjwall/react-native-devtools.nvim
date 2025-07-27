@@ -1,2 +1,3 @@
-rplugin
-node_modules
+dist/
+rplugin/
+node_modules/
