@@ -4,6 +4,7 @@ import {ManagerTargets} from './targets/ManagerTargets'
 import {Target} from './targets/Target'
 import {setupTargets} from './targets/setupTargets'
 import {ApiError} from './types/ApiError'
+import {createConsoleBuffer} from './utils/createConsoleBuffer'
 import {type Message} from '@frontend/core/protocol_client/InspectorBackend'
 import {Neovim, NvimPlugin, Buffer} from 'neovim'
 import WebSocket from 'ws'
@@ -17,19 +18,6 @@ module.exports = async (plugin: NvimPlugin) => {
   let buffer: Buffer | null = null
 
   setupTargets(plugin, {managerTargets, logger})
-
-  async function createConsoleBuffer() {
-    await nvim.command('enew')
-    buffer = await nvim.buffer
-    await buffer.setOption('buftype', 'nofile')
-    // await buf.setOption('bufhidden', 'hide');
-    await buffer.setOption('swapfile', false)
-    await buffer.setLines([], {
-      start: 0,
-      end: -1,
-      strictIndexing: false,
-    })
-  }
 
   async function appendToBuffer(line: string) {
     if (buffer === null) return
@@ -47,7 +35,7 @@ module.exports = async (plugin: NvimPlugin) => {
     await logger.trace('StartWebSocketFeed')
     const result = await managerTargets.refresh()
 
-    await createConsoleBuffer()
+    buffer = await createConsoleBuffer(plugin)
 
     if (result.isErr() || result.value.length === 0) {
       await appendToBuffer('No targets to connect to!')
@@ -55,8 +43,6 @@ module.exports = async (plugin: NvimPlugin) => {
     }
 
     const target = result.value[0]
-
-    await createConsoleBuffer()
 
     const url = target.webSocketDebuggerUrl
     await appendToBuffer(`Connecting to WebSocket... ${url}`)
