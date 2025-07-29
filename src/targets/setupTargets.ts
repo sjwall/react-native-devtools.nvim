@@ -1,7 +1,7 @@
 import {Logger} from '../Logger'
+import {error, info} from '../utils/messages'
 import {ManagerTargets} from './ManagerTargets'
 import {NvimPlugin} from 'neovim'
-import {error, info} from '../utils/messages'
 
 export type TargetsOptions = {
   managerTargets: ManagerTargets
@@ -18,15 +18,22 @@ export function setupTargets(
 
     if (result.isErr()) {
       await logger.trace('RNDUITargets: failed to refresh')
-      return error(plugin, `Failed to list React Native targets!\n${result.error}`)
-    } else if (  result.value.length === 0) {
+      return error(
+        plugin,
+        `Failed to list React Native targets!\n${result.error}`,
+      )
+    } else if (result.value.length === 0) {
       return info(plugin, `# Targets\nThere are no targets.`)
-    }
-    else {
-      return error(plugin,
-      `# Targets\n${result.value
-.filter(({reactNative}) => reactNative.capabilities.prefersFuseboxFrontend)
-.map(({ id ,title }) => `- ${id} ${title}`).join('\n')}\n`)
+    } else {
+      return error(
+        plugin,
+        `# Targets\n${result.value
+          .filter(
+            ({reactNative}) => reactNative.capabilities.prefersFuseboxFrontend,
+          )
+          .map(({id, title}) => `- ${id} ${title}`)
+          .join('\n')}\n`,
+      )
     }
   })
 

@@ -1,7 +1,11 @@
-import { NvimPlugin } from "neovim";
+import {NvimPlugin} from 'neovim'
 
-export async function notify(plugin: NvimPlugin, message: string, level: 0 | 1 | 2 | 3 | 4 | 5) {
- return plugin.nvim.call('nvim_notify', [message, level, {}])
+export async function notify(
+  plugin: NvimPlugin,
+  message: string,
+  level: 0 | 1 | 2 | 3 | 4 | 5,
+) {
+  return plugin.nvim.call('nvim_notify', [message, level, {}])
 }
 
 export async function fatal(plugin: NvimPlugin, message: string) {
