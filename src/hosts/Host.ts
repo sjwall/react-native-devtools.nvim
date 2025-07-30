@@ -3,6 +3,8 @@ import {ManagerTargets} from '../targets/ManagerTargets'
 import {createConsoleBuffer} from '../utils/createConsoleBuffer'
 import {type Message} from '@frontend/core/protocol_client/InspectorBackend'
 import {NvimPlugin} from 'neovim'
+import {Buffer} from 'neovim/lib/api/Buffer'
+import {WebSocket} from 'ws'
 
 export class Host {
   #url: string
@@ -30,7 +32,7 @@ export class Host {
     this.#managerTargets = new ManagerTargets(url)
   }
 
-  appendToBuffer = async function appendToBuffer(line: string) {
+  appendToBuffer = async (line: string) => {
     if (this.#buffer === null) return
     const lines = await this.#buffer.lines
     await this.#buffer.setOption('modifiable', true)
@@ -42,11 +44,11 @@ export class Host {
     await this.#buffer.setOption('modifiable', false)
   }
 
-  connect = async function connect() {
-    await this.logger.trace('StartWebSocketFeed')
+  connect = async () => {
+    await this.#logger.trace('StartWebSocketFeed')
     const result = await this.#managerTargets.refresh()
 
-    this.buffer = await createConsoleBuffer(this.#plugin)
+    this.#buffer = await createConsoleBuffer(this.#plugin)
 
     if (result.isErr() || result.value.length === 0) {
       await this.appendToBuffer('No targets to connect to!')
@@ -58,14 +60,13 @@ export class Host {
     const url = target.webSocketDebuggerUrl
     await this.appendToBuffer(`Connecting to WebSocket... ${url}`)
 
-    this.#ws = new WebSocket(url) // test WS server
+    this.#ws = new WebSocket(url)
 
     this.#ws.on('open', () => {
       this.appendToBuffer('WebSocket connection opened')
       const message = JSON.stringify({id: 1, method: 'Runtime.enable'})
       this.appendToBuffer(message)
       this.#ws?.send(message)
-      // ws?.send('Hello from Neovim plugin!');
     })
 
     this.#ws.onmessage = (event) => {
@@ -111,9 +112,9 @@ export class Host {
     })
   }
 
-  close = async function close() {
+  close = async () => {
     if (this.#ws) {
-      await this.#ws.close()
+      this.#ws.close()
       this.#ws = null
     }
   }

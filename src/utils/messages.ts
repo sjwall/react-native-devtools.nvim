@@ -5,7 +5,11 @@ export async function notify(
   message: string,
   level: 0 | 1 | 2 | 3 | 4 | 5,
 ) {
-  return plugin.nvim.call('nvim_notify', [message, level, { title : 'react-native-devtools.nvim' }])
+  return plugin.nvim.call('nvim_notify', [
+    message,
+    level,
+    {title: 'react-native-devtools.nvim'},
+  ])
 }
 
 export async function fatal(plugin: NvimPlugin, message: string) {
