@@ -1,20 +1,20 @@
 import {Logger} from '../Logger'
+import {ManagerHosts} from '../hosts/ManagerHosts'
 import {error, info} from '../utils/messages'
-import {ManagerTargets} from './ManagerTargets'
 import {NvimPlugin} from 'neovim'
 
 export type TargetsOptions = {
-  managerTargets: ManagerTargets
+  managerHosts: ManagerHosts
   logger: Logger
 }
 
 export function setupTargets(
   plugin: NvimPlugin,
-  {managerTargets, logger}: TargetsOptions,
+  {managerHosts, logger}: TargetsOptions,
 ) {
-  plugin.registerFunction('RNDUITargets', async () => {
+  plugin.registerCommand('RNDUITargets', async () => {
     await logger.trace('RNDUITargets')
-    const result = await managerTargets.refresh()
+    const result = await managerHosts.hosts[0].managerTargets.refresh()
 
     if (result.isErr()) {
       await logger.trace('RNDUITargets: failed to refresh')
@@ -25,7 +25,7 @@ export function setupTargets(
     } else if (result.value.length === 0) {
       return info(plugin, `# Targets\nThere are no targets.`)
     } else {
-      return error(
+      return info(
         plugin,
         `# Targets\n${result.value
           .filter(
@@ -39,7 +39,7 @@ export function setupTargets(
 
   plugin.registerFunction('RNDTargets', async () => {
     await logger.trace('RNDTargets')
-    const result = await managerTargets.refresh()
+    const result = await managerHosts.hosts[0].managerTargets.refresh()
 
     if (result.isErr() || result.value.length === 0) {
       await logger.trace('RNDTargets: failed to refresh')
