@@ -34,9 +34,14 @@ export class Host {
 
   appendToBuffer = async (line: string) => {
     if (this.#buffer === null) return
-    const lines = await this.#buffer.lines
+    let lines = await this.#buffer.lines
     await this.#buffer.setOption('modifiable', true)
-    await this.#buffer.setLines([...lines, line], {
+    if (lines.length === 1 && lines[0] === '') {
+      lines = [line]
+    } else {
+      lines.push(line)
+    }
+    await this.#buffer.setLines(lines, {
       start: 0,
       end: -1,
       strictIndexing: false,
