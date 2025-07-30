@@ -54,6 +54,7 @@ export class Host {
     const result = await this.#managerTargets.refresh()
 
     this.#buffer = await createConsoleBuffer(this.#plugin)
+    this.#buffer.name = `React Native: ${this.#url} - ${this.#managerTargets.targets[0].title}`
 
     if (result.isErr() || result.value.length === 0) {
       await this.appendToBuffer('No targets to connect to!')
