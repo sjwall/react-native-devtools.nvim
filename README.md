@@ -14,7 +14,7 @@ More coming soon...
 -- lazy.nvim
 {
   'sjwall/react-native-devtools.nvim',
-  build = ':RNDevToolsSetup',
+  build = './build.sh',
   event = 'VeryLazy',
   dependencies = {
     'nvim-lua/plenary.nvim',
