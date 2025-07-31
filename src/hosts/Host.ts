@@ -1,7 +1,7 @@
 import {Logger} from '../Logger'
 import {ManagerTargets} from '../targets/ManagerTargets'
 import {createConsoleBuffer} from '../utils/createConsoleBuffer'
-import {type Message} from '@frontend/core/protocol_client/InspectorBackend'
+import {type Message} from '../ReactNativeDevtools'
 import {NvimPlugin} from 'neovim'
 import {Buffer} from 'neovim/lib/api/Buffer'
 import {WebSocket} from 'ws'
