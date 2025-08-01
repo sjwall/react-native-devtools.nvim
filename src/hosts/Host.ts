@@ -1,7 +1,8 @@
 import {Logger} from '../Logger'
+import {type Message} from '../ReactNativeDevtools'
 import {ManagerTargets} from '../targets/ManagerTargets'
 import {createConsoleBuffer} from '../utils/createConsoleBuffer'
-import {type Message} from '../ReactNativeDevtools'
+import {parseUrl} from '../utils/parseUrl'
 import {NvimPlugin} from 'neovim'
 import {Buffer} from 'neovim/lib/api/Buffer'
 import {WebSocket} from 'ws'
@@ -54,7 +55,8 @@ export class Host {
     const result = await this.#managerTargets.refresh()
 
     this.#buffer = await createConsoleBuffer(this.#plugin)
-    this.#buffer.name = `React Native: ${this.#url} - ${this.#managerTargets.targets[0].title}`
+    const [_, path] = parseUrl(this.#url)
+    this.#buffer.name = `rndt://${path}/${this.#managerTargets.targets[0].deviceName}/${this.#managerTargets.targets[0].appId}`
 
     if (result.isErr() || result.value.length === 0) {
       await this.appendToBuffer('No targets to connect to!')
