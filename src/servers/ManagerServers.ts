@@ -1,6 +1,6 @@
+import {NvimPlugin} from 'neovim'
 import {Logger} from '../Logger'
 import {Server} from './Server'
-import {NvimPlugin} from 'neovim'
 
 export class ManagerServers {
   #plugin: NvimPlugin

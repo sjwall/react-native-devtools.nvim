@@ -1,7 +1,7 @@
+import {NvimPlugin} from 'neovim'
 import {Logger} from '../Logger'
 import {ManagerServers} from '../servers/ManagerServers'
 import {error, info} from '../utils/messages'
-import {NvimPlugin} from 'neovim'
 
 export type TargetsOptions = {
   managerServers: ManagerServers

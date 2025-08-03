@@ -1,5 +1,5 @@
-import {HttpError, NetworkError, ApiError} from '../types/ApiError'
 import {Result, ok, err} from 'neverthrow'
+import {HttpError, NetworkError, ApiError} from '../types/ApiError'
 
 /**
  * Fetches data from a URL and parses it as JSON.
