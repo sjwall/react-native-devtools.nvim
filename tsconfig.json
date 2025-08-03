@@ -11,5 +11,5 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["./frontend-env.d.ts", "./global-env.d.ts", "src/index.js"]
+  "include": ["./frontend-env.d.ts", "./global-env.d.ts", "src/index.ts"]
 }
