@@ -1,5 +1,5 @@
 import {Logger} from './Logger'
-import {ManagerHosts} from './hosts/ManagerHosts'
+import {ManagerServers} from './servers/ManagerServers'
 import {setupHighlightGroups} from './setupHighlightGroups'
 import {setupTargets} from './targets/setupTargets'
 import {NvimPlugin} from 'neovim'
@@ -8,15 +8,21 @@ module.exports = async (plugin: NvimPlugin) => {
   plugin.setOptions({dev: true})
   setupHighlightGroups(plugin)
   const logger = new Logger()
-  const managerHosts = new ManagerHosts(plugin, logger)
+  const managerServers = new ManagerServers(plugin, logger)
 
-  setupTargets(plugin, {managerHosts, logger})
+  setupTargets(plugin, {managerServers, logger})
 
-  plugin.registerFunction('RNDConsoleOpen', async ([host, target]) => {
-    return managerHosts.find(host ?? 'http://localhost:8081')?.connect()
-  })
+  plugin.registerFunction(
+    'RNDConsoleOpen',
+    async ([url, target]: [string, string]) => {
+      return managerServers.find(url ?? 'http://localhost:8081')?.connect()
+    },
+  )
 
-  plugin.registerFunction('RNDConsoleClose', async ([host, target]) => {
-    return managerHosts.find(host ?? 'http://localhost:8081')?.close()
-  })
+  plugin.registerFunction(
+    'RNDConsoleClose',
+    async ([url, target]: [string, string]) => {
+      return managerServers.find(url ?? 'http://localhost:8081')?.close()
+    },
+  )
 }

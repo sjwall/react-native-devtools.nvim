@@ -11,7 +11,7 @@ import {WebSocket} from 'ws'
 
 type BufferHighlightLine = Omit<BufferHighlight, 'line'>
 
-export class Host {
+export class Server {
   #url: string
 
   get url() {
@@ -30,7 +30,7 @@ export class Host {
 
   #plugin: NvimPlugin
   #logger: Logger
-  #ns: number
+  #ns!: number
   #queue = new PQueue({concurrency: 1})
 
   constructor(url: string, plugin: NvimPlugin, logger: Logger) {
@@ -118,7 +118,7 @@ export class Host {
                 'ReactNativeDevtools: Malformed Runtime.consoleAPICalled',
               )
               const messages = result.params.args
-                .map(({value}) => value)
+                .map(({value}: {value: string}) => value)
                 .filter(
                   (value: string) =>
                     !value.includes(
