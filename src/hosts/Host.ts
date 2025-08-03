@@ -108,6 +108,18 @@ export class Host {
     this.#ws.onmessage = (event) => {
       ;(async () => {
         await this.#logger.trace(`message recieved: ${event.type}`)
+        await this.#plugin.nvim.call('nvim_exec_autocmds', [
+        "User",
+        {
+          pattern: `ReactNativeDevtools${this.#managerTargets.targets[0].id}`,
+          data: {
+            timestamp: new Date().toISOString(),
+            type: event.type,
+            data: event.data,
+            // target: event.target
+          },
+        },
+      ])
         if (event.type === 'message') {
           try {
             await this.#logger.log('message', event.data as string)

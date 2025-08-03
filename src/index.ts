@@ -12,11 +12,11 @@ module.exports = async (plugin: NvimPlugin) => {
 
   setupTargets(plugin, {managerHosts, logger})
 
-  plugin.registerFunction('RNDConsoleOpen', async ([host, target]) => {
-    return managerHosts.find(host ?? 'http://localhost:8081')?.connect()
-  })
-
-  plugin.registerFunction('RNDConsoleClose', async ([host, target]) => {
-    return managerHosts.find(host ?? 'http://localhost:8081')?.close()
-  })
+  // plugin.registerFunction('RNDConsoleOpen', async ([host, target]) => {
+  //   return managerHosts.find(host ?? 'http://localhost:8081')?.connect()
+  // })
+  //
+  // plugin.registerFunction('RNDConsoleClose', async ([host, target]) => {
+  //   return managerHosts.find(host ?? 'http://localhost:8081')?.close()
+  // })
 }
