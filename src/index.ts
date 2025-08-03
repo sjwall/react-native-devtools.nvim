@@ -15,14 +15,22 @@ module.exports = async (plugin: NvimPlugin) => {
   plugin.registerFunction(
     'RNDConsoleOpen',
     async ([url, target]: [string, string]) => {
-      return managerServers.find(url ?? 'http://localhost:8081')?.connect()
+      const server = managerServers.find(url ?? 'http://localhost:8081')
+      const targets = await server?.refreshTargets()
+      if (targets?.isOk()) {
+        const connection = await server!.connectToTarget(
+          targets.value.find((item) => item.id === target) ?? targets.value[0],
+        )
+        connection.openConsole()
+      }
     },
   )
 
   plugin.registerFunction(
     'RNDConsoleClose',
     async ([url, target]: [string, string]) => {
-      return managerServers.find(url ?? 'http://localhost:8081')?.close()
+      const server = managerServers.find(url ?? 'http://localhost:8081')
+      await server?.disconnectTarget(target)
     },
   )
 }
