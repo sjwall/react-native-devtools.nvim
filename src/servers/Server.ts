@@ -2,7 +2,8 @@ import {NvimPlugin} from 'neovim'
 import {WebSocket} from 'ws'
 import {Logger} from '../Logger'
 import {ConsoleBuffer} from '../console/ConsoleBuffer'
-import {ManagerTargets} from '../targets/ManagerTargets'
+import {Target} from '../targets/Target'
+import {fetchData} from '../utils/fetchData'
 import {info, warn} from '../utils/messages'
 
 export class Server {
@@ -12,10 +13,10 @@ export class Server {
     return this.#url
   }
 
-  #managerTargets: ManagerTargets
+  #targets: Target[] = []
 
-  get managerTargets() {
-    return this.#managerTargets
+  get targets() {
+    return this.#targets
   }
 
   #ws: WebSocket | null = null
@@ -27,12 +28,19 @@ export class Server {
     this.#url = url
     this.#plugin = plugin
     this.#logger = logger
-    this.#managerTargets = new ManagerTargets(url)
+  }
+
+  async refreshTargets() {
+    const result = await fetchData<Target[]>(`${this.#url}/json`)
+    if (result.isOk()) {
+      this.#targets = result.value
+    }
+    return result
   }
 
   connect = async () => {
     await this.#logger.trace('Server:connect')
-    const result = await this.#managerTargets.refresh()
+    const result = await this.refreshTargets()
 
     if (result.isErr() || result.value.length === 0) {
       warn(this.#plugin, 'No targets to connect to!')

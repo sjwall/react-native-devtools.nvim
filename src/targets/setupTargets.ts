@@ -14,7 +14,7 @@ export function setupTargets(
 ) {
   plugin.registerCommand('RNDUITargets', async () => {
     await logger.trace('RNDUITargets')
-    const result = await managerServers.servers[0].managerTargets.refresh()
+    const result = await managerServers.servers[0].refreshTargets()
 
     if (result.isErr()) {
       await logger.trace('RNDUITargets: failed to refresh')
@@ -39,7 +39,7 @@ export function setupTargets(
 
   plugin.registerFunction('RNDTargets', async () => {
     await logger.trace('RNDTargets')
-    const result = await managerServers.servers[0].managerTargets.refresh()
+    const result = await managerServers.servers[0].refreshTargets()
 
     if (result.isErr() || result.value.length === 0) {
       await logger.trace('RNDTargets: failed to refresh')
