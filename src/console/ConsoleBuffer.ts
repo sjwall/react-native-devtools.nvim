@@ -67,7 +67,7 @@ export class ConsoleBuffer {
                   if (item.type === 'string') {
                     return item.value
                   }
-                  return `\n${JSON.stringify(item)}\n`
+                  return JSON.stringify(item)
                 })
 
               if (messages.length === 0) {
