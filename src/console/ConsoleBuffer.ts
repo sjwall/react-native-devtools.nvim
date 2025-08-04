@@ -56,13 +56,19 @@ export class ConsoleBuffer {
                 'ReactNativeDevtools: Malformed Runtime.consoleAPICalled',
               )
               const messages = result.params.args
-                .map(({value}: {value: string}) => value)
                 .filter(
-                  (value: string) =>
+                  ({type, value}: {type: string; value: string}) =>
+                    type !== 'string' ||
                     !value.includes(
                       'You are using an unsupported debugging client. Use the Dev Menu in your app (or type `j` in the Metro terminal) to open React Native DevTools.',
                     ),
                 )
+                .map((item: {type: string; value: string}) => {
+                  if (item.type === 'string') {
+                    return item.value
+                  }
+                  return `\n${JSON.stringify(item)}\n`
+                })
 
               if (messages.length === 0) {
                 return
