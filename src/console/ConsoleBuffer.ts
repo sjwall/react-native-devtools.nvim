@@ -55,7 +55,7 @@ export class ConsoleBuffer {
                 result.params != null,
                 'ReactNativeDevtools: Malformed Runtime.consoleAPICalled',
               )
-              const messages = result.params.args
+              const logs = result.params.args
                 .filter(
                   ({type, value}: {type: string; value: string}) =>
                     type !== 'string' ||
@@ -70,40 +70,49 @@ export class ConsoleBuffer {
                   return JSON.stringify(item)
                 })
 
-              if (messages.length === 0) {
+              if (logs.length === 0) {
                 return
               }
 
               const createMessage = (
                 parts: [string, string][],
-              ): [string, BufferHighlightLine[]] => {
-                const hightlights: BufferHighlightLine[] = []
-                let message = ''
+              ): [string[], BufferHighlightLine[][]] => {
+                const hightlights: BufferHighlightLine[][] = []
+                let currentHighlight: BufferHighlight[] = []
+                const messages: string[] = []
+                let currentMessage = ''
                 parts.forEach(([part, hlGroup]) => {
-                  if (message.length > 0) {
-                    message += ' '
+                  if (part.includes('\n') && currentMessage.length > 0) {
+                    hightlights.push(currentHighlight)
+                    messages.push(currentMessage)
+                    currentHighlight = []
+                    currentMessage = ''
                   }
-                  const colStart = message.length
-                  message += part
-                  hightlights.push({
+                  if (currentMessage.length > 0) {
+                    currentMessage += ' '
+                  }
+                  const colStart = currentMessage.length
+                  currentMessage += part
+                  currentHighlight.push({
                     hlGroup,
                     colStart,
-                    colEnd: message.length,
+                    colEnd: currentMessage.length,
                     srcId: this.#ns,
                   })
                 })
-                return [message, hightlights]
+                return [[...messages, currentMessage], [...hightlights, currentHighlight]]
               }
               const type = `${result.params.type[0].toUpperCase()}${result.params.type.substring(1)}`
-              const [message, highlights] = createMessage([
+              const [messages, highlights] = createMessage([
                 [
                   new Date(result.params.timestamp).toLocaleTimeString(),
                   'ReactNativeDevtoolsTimestamp',
                 ],
                 [type, `ReactNativeDevtools${type}Title`],
-                [messages.join(', '), `ReactNativeDevtools${type}Text`],
+                [logs.join(', '), `ReactNativeDevtools${type}Text`],
               ])
-              await this.appendToBuffer(message, ...highlights)
+              await Promise.allSettled(messages.map((message, index) =>
+               this.appendToBuffer(message, ...highlights[index])))
             } else {
               await this.appendToBuffer(
                 `unhandled method ${result.method ?? 'no method'}`,
