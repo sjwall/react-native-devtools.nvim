@@ -1,3 +1,5 @@
+export type * from './front_end/generated/protocol'
+
 // --------------------------------------------------
 // front_end/core/platform/DevToolsPath.ts
 export type Brand<Base, Tag> = Base & {_tag: Tag}
