@@ -8,6 +8,7 @@ import {Logger} from '../Logger'
 import {Target} from '../targets/Target'
 import {createConsoleBuffer} from '../utils/createConsoleBuffer'
 import {parseUrl} from '../utils/parseUrl'
+import {ConsoleMessage} from './ConsoleMessage'
 
 type BufferHighlightLine = Omit<BufferHighlight, 'line'>
 
@@ -19,6 +20,7 @@ export class ConsoleBuffer {
   #logger: Logger
 
   #queue = new PQueue({concurrency: 1})
+  #src: ConsoleMessage[] = []
   #buffer: Buffer | null = null
   #highlights: BufferHighlight[] = []
   #ns!: number
@@ -56,64 +58,30 @@ export class ConsoleBuffer {
                 'ReactNativeDevtools: Malformed Runtime.consoleAPICalled',
               )
               const event = result.params as Runtime.ConsoleAPICalledEvent
-              const log = event.args
-                .filter(
-                  ({type, value}) =>
-                    type !== 'string' ||
-                    !value.includes(
-                      'You are using an unsupported debugging client. Use the Dev Menu in your app (or type `j` in the Metro terminal) to open React Native DevTools.',
-                    ),
-                )
-                .map((item) => {
-                  if (item.type === 'string') {
-                    return item.value
-                  } else if (item.type === 'number') {
-                    return String(item.value)
-                  }
-                  return JSON.stringify(item)
-                })
+              const log = event.args.filter(
+                ({type, value}) =>
+                  type !== 'string' ||
+                  !value.includes(
+                    'You are using an unsupported debugging client. Use the Dev Menu in your app (or type `j` in the Metro terminal) to open React Native DevTools.',
+                  ),
+              )
 
               if (log.length === 0) {
                 return
               }
 
-              const createMessage = (
-                parts: [string, string][],
-              ): [string[], BufferHighlightLine[][]] => {
-                const hightlights: BufferHighlightLine[][] = []
-                let messages: string[] = []
-                const currentHighlight: BufferHighlightLine[] = []
-                let currentMessage = ''
-                parts.forEach(([part, hlGroup]) => {
-                  if (currentMessage.length > 0) {
-                    currentMessage += ' '
-                  }
-                  const colStart = currentMessage.length
-                  currentMessage += part
-                  currentHighlight.push({
-                    hlGroup,
-                    colStart,
-                    colEnd: currentMessage.length,
-                    srcId: this.#ns,
-                  })
-                })
-                return [
-                  [...messages, currentMessage],
-                  [...hightlights, currentHighlight],
-                ]
-              }
-              const type = `${event.type[0].toUpperCase()}${event.type.substring(1)}`
-              const [messages, highlights] = createMessage([
-                [
-                  new Date(event.timestamp).toLocaleTimeString(),
-                  'ReactNativeDevtoolsTimestamp',
-                ],
-                [type, `ReactNativeDevtools${type}Title`],
-                [log.join(', '), `ReactNativeDevtools${type}Text`],
-              ])
+              const consoleMessage = new ConsoleMessage(event, this.#ns)
+              this.#src.push(consoleMessage)
+
+              const [messages, highlights] = consoleMessage.render()
               await Promise.allSettled(
                 messages.map((message, index) =>
-                  this.appendToBuffer(message, ...highlights[index]),
+                  this.appendToBuffer(
+                    message,
+                    ...highlights
+                      .filter(({line}) => line === index)
+                      .map(({line, ...rest}) => rest),
+                  ),
                 ),
               )
             } else {
