@@ -1,4 +1,4 @@
-import {type Message, Runtime } from 'react-native-devtools-frontend'
+import {type Message, Runtime} from 'react-native-devtools-frontend'
 import assert from 'node:assert'
 import {NvimPlugin} from 'neovim'
 import {Buffer, BufferHighlight} from 'neovim/lib/api/Buffer'
@@ -67,6 +67,8 @@ export class ConsoleBuffer {
                 .map((item) => {
                   if (item.type === 'string') {
                     return item.value
+                  } else if (item.type === 'number') {
+                    return String(item.value)
                   }
                   return JSON.stringify(item)
                 })
