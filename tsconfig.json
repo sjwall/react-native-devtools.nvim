@@ -9,7 +9,12 @@
     "strict": true,
     "noImplicitAny": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "react-native-devtools-frontend": [
+        "./react-native-devtools-frontend/index.ts"
+      ]
+    }
   },
   "include": ["./frontend-env.d.ts", "./global-env.d.ts", "src/index.ts"]
 }
