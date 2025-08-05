@@ -1,4 +1,4 @@
-import {type Message} from 'react-native-devtools-frontend'
+import {type Message, Runtime } from 'react-native-devtools-frontend'
 import assert from 'node:assert'
 import {NvimPlugin} from 'neovim'
 import {Buffer, BufferHighlight} from 'neovim/lib/api/Buffer'
@@ -55,55 +55,65 @@ export class ConsoleBuffer {
                 result.params != null,
                 'ReactNativeDevtools: Malformed Runtime.consoleAPICalled',
               )
-              const messages = result.params.args
+              const event = result.params as Runtime.ConsoleAPICalledEvent
+              const log = event.args
                 .filter(
-                  ({type, value}: {type: string; value: string}) =>
+                  ({type, value}) =>
                     type !== 'string' ||
                     !value.includes(
                       'You are using an unsupported debugging client. Use the Dev Menu in your app (or type `j` in the Metro terminal) to open React Native DevTools.',
                     ),
                 )
-                .map((item: {type: string; value: string}) => {
+                .map((item) => {
                   if (item.type === 'string') {
                     return item.value
                   }
                   return JSON.stringify(item)
                 })
 
-              if (messages.length === 0) {
+              if (log.length === 0) {
                 return
               }
 
               const createMessage = (
                 parts: [string, string][],
-              ): [string, BufferHighlightLine[]] => {
-                const hightlights: BufferHighlightLine[] = []
-                let message = ''
+              ): [string[], BufferHighlightLine[][]] => {
+                const hightlights: BufferHighlightLine[][] = []
+                let messages: string[] = []
+                const currentHighlight: BufferHighlightLine[] = []
+                let currentMessage = ''
                 parts.forEach(([part, hlGroup]) => {
-                  if (message.length > 0) {
-                    message += ' '
+                  if (currentMessage.length > 0) {
+                    currentMessage += ' '
                   }
-                  const colStart = message.length
-                  message += part
-                  hightlights.push({
+                  const colStart = currentMessage.length
+                  currentMessage += part
+                  currentHighlight.push({
                     hlGroup,
                     colStart,
-                    colEnd: message.length,
+                    colEnd: currentMessage.length,
                     srcId: this.#ns,
                   })
                 })
-                return [message, hightlights]
+                return [
+                  [...messages, currentMessage],
+                  [...hightlights, currentHighlight],
+                ]
               }
-              const type = `${result.params.type[0].toUpperCase()}${result.params.type.substring(1)}`
-              const [message, highlights] = createMessage([
+              const type = `${event.type[0].toUpperCase()}${event.type.substring(1)}`
+              const [messages, highlights] = createMessage([
                 [
-                  new Date(result.params.timestamp).toLocaleTimeString(),
+                  new Date(event.timestamp).toLocaleTimeString(),
                   'ReactNativeDevtoolsTimestamp',
                 ],
                 [type, `ReactNativeDevtools${type}Title`],
-                [messages.join(', '), `ReactNativeDevtools${type}Text`],
+                [log.join(', '), `ReactNativeDevtools${type}Text`],
               ])
-              await this.appendToBuffer(message, ...highlights)
+              await Promise.allSettled(
+                messages.map((message, index) =>
+                  this.appendToBuffer(message, ...highlights[index]),
+                ),
+              )
             } else {
               await this.appendToBuffer(
                 `unhandled method ${result.method ?? 'no method'}`,
