@@ -1,10 +1,12 @@
 import {Runtime} from 'react-native-devtools-frontend'
 import {BufferHighlight} from 'neovim/lib/api/Buffer'
+import {ConsoleObject} from './ConsoleObject'
+import {renderConsoleObject} from './renderConsoleObject'
 
 export class ConsoleMessage {
   #type: Runtime.ConsoleAPICalledEventType
   #timestamp: Runtime.Timestamp
-  #parts: Runtime.RemoteObject[]
+  #parts: ConsoleObject[]
   #ns: number
 
   constructor(event: Runtime.ConsoleAPICalledEvent, namespace: number) {
@@ -44,43 +46,35 @@ export class ConsoleMessage {
     )
 
     this.#parts.forEach((item) => {
-      // TODO use preview
-      if (item.type === 'string') {
-        currentLine = this.#appendHighlightGroup(
-          currentLine,
-          item.value.replaceAll('\n', '\\n'),
-          lines,
-          highlights,
-          `ReactNativeDevtoolsConsoleItem${item.type}`,
-        )
-      } else if (item.type === 'number') {
-        currentLine = this.#appendHighlightGroup(
-          currentLine,
-          String(item.value),
-          lines,
-          highlights,
-          `ReactNativeDevtoolsConsoleItem${item.type}`,
-        )
-      } else if (item.type === 'object') {
-        let description = 'unknown'
-        if (item.description) {
-          let endIndex = item.description.indexOf('\n')
-          if (endIndex === -1) {
-          endIndex = item.description.length
-          }
-          description = item.description.substring(0, endIndex)
-        }
-        currentLine = this.#appendHighlightGroup(
-          currentLine,
-          `${item.preview ? '▼▲ ' : ''}[${description}]`,
-          lines,
-          highlights,
-          `ReactNativeDevtoolsConsoleItemError`,
-        )
-      } else {
+      let [partLines, partHighlights] = renderConsoleObject(item, this.#ns)
+      if (partLines[0] === 'force-new-line') {
+        partLines = partLines.slice(1)
         lines.push(currentLine)
         currentLine = ''
-        lines.push(JSON.stringify(item))
+      }
+      if (partLines.length === 1) {
+        const join = currentLine === '' ? '' : ' '
+        highlights.push(
+          ...partHighlights.map(({colStart, colEnd, ...highlight}) => ({
+            ...highlight,
+            colStart: currentLine.length + join.length,
+            colEnd: currentLine.length + join.length + partLines[0].length,
+            line: lines.length,
+          })),
+        )
+        currentLine += join + partLines[0]
+      } else {
+        if (currentLine != '') {
+          lines.push(currentLine)
+          currentLine = ''
+        }
+        highlights.push(
+          ...partHighlights.map(({line, ...rest}) => ({
+            ...rest,
+            line: (line ?? 0) + lines.length,
+          })),
+        )
+        lines.push(...partLines)
       }
     })
     if (currentLine != '') {
