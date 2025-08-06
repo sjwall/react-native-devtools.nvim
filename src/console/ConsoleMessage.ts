@@ -61,6 +61,22 @@ export class ConsoleMessage {
           highlights,
           `ReactNativeDevtoolsConsoleItem${item.type}`,
         )
+      } else if (item.type === 'object') {
+        let description = 'unknown'
+        if (item.description) {
+          let endIndex = item.description.indexOf('\n')
+          if (endIndex === -1) {
+          endIndex = item.description.length
+          }
+          description = item.description.substring(0, endIndex)
+        }
+        currentLine = this.#appendHighlightGroup(
+          currentLine,
+          `${item.preview ? '▼▲ ' : ''}[${description}]`,
+          lines,
+          highlights,
+          `ReactNativeDevtoolsConsoleItemError`,
+        )
       } else {
         lines.push(currentLine)
         currentLine = ''
