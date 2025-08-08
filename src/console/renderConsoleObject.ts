@@ -5,7 +5,7 @@ import {ConsoleObject} from './ConsoleObject'
 export function renderConsoleObject(
   item: ConsoleObject,
   srcId: number,
-  indent: '' | '  ' = ''
+  indent: '' | '  ' = '',
 ): [string[], BufferHighlight[]] {
   const lines: string[] = []
   const highlights: BufferHighlight[] = []
@@ -58,7 +58,10 @@ export function renderConsoleObject(
       }
       description = item.description.substring(0, endIndex)
     }
-    if ((item as Runtime.RemoteObject).preview || (item as Runtime.ObjectPreview).properties) {
+    if (
+      (item as Runtime.RemoteObject).preview ||
+      (item as Runtime.ObjectPreview).properties
+    ) {
       if (item.expanded) {
         lines.push(`▲[${description}]`)
         highlights.push({
@@ -69,7 +72,12 @@ export function renderConsoleObject(
           srcId,
         })
         // TODO render properties
-        lines.push(...((item as Runtime.RemoteObject).preview ?? item as Runtime.ObjectPreview).properties.map(({name}) => `${indent}  ${name}`))
+        lines.push(
+          ...(
+            (item as Runtime.RemoteObject).preview ??
+            (item as Runtime.ObjectPreview)
+          ).properties.map(({name}) => `${indent}  ${name}`),
+        )
       } else {
         lines.push(`▼[${description}]`)
         highlights.push({

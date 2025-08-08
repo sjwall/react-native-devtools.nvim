@@ -1,9 +1,10 @@
-import { Runtime } from 'react-native-devtools-frontend'
-import { BufferHighlight } from 'neovim/lib/api/Buffer'
-import { ConsoleObject } from './ConsoleObject'
-import { renderConsoleObject } from './renderConsoleObject'
+import {Runtime} from 'react-native-devtools-frontend'
+import {BufferHighlight} from 'neovim/lib/api/Buffer'
+import {ConsoleMessage} from './ConsoleMessage'
+import {ConsoleObject} from './ConsoleObject'
+import {renderConsoleObject} from './renderConsoleObject'
 
-export class ConsoleMessageLog {
+export class ConsoleMessageLog implements ConsoleMessage {
   #type: Runtime.ConsoleAPICalledEventType
   #timestamp: Runtime.Timestamp
   #parts: ConsoleObject[]
@@ -14,7 +15,7 @@ export class ConsoleMessageLog {
     this.#type = event.type
     this.#timestamp = event.timestamp
     this.#parts = event.args.filter(
-      ({ type, value }) =>
+      ({type, value}) =>
         type !== 'string' ||
         !value.includes(
           'You are using an unsupported debugging client. Use the Dev Menu in your app (or type `j` in the Metro terminal) to open React Native DevTools.',
@@ -55,7 +56,7 @@ export class ConsoleMessageLog {
       if (partLines.length === 1) {
         const join = currentLine === '' ? '' : ' '
         highlights.push(
-          ...partHighlights.map(({ colStart, colEnd, ...highlight }) => ({
+          ...partHighlights.map(({colStart, colEnd, ...highlight}) => ({
             ...highlight,
             colStart: currentLine.length + join.length,
             colEnd: currentLine.length + join.length + partLines[0].length,
@@ -69,7 +70,7 @@ export class ConsoleMessageLog {
           currentLine = ''
         }
         highlights.push(
-          ...partHighlights.map(({ line, ...rest }) => ({
+          ...partHighlights.map(({line, ...rest}) => ({
             ...rest,
             line: (line ?? 0) + lines.length,
           })),

@@ -8,6 +8,7 @@ import {Logger} from '../Logger'
 import {Target} from '../targets/Target'
 import {createConsoleBuffer} from '../utils/createConsoleBuffer'
 import {parseUrl} from '../utils/parseUrl'
+import {ConsoleMessage} from './ConsoleMessage'
 import {ConsoleMessageLog} from './ConsoleMessageLog'
 
 type BufferHighlightLine = Omit<BufferHighlight, 'line'>
@@ -20,7 +21,7 @@ export class ConsoleBuffer {
   #logger: Logger
 
   #queue = new PQueue({concurrency: 1})
-  #src: ConsoleMessageLog[] = []
+  #src: ConsoleMessage[] = []
   #buffer: Buffer | null = null
   #highlights: BufferHighlight[] = []
   #ns!: number
