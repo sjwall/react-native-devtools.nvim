@@ -5,7 +5,6 @@ import {setupHighlightGroups} from './setupHighlightGroups'
 import {setupTargets} from './targets/setupTargets'
 
 module.exports = async (plugin: NvimPlugin) => {
-  plugin.setOptions({dev: true})
   setupHighlightGroups(plugin)
   const logger = new Logger(plugin)
   const managerServers = new ManagerServers(plugin, logger)
