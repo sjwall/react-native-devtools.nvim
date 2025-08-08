@@ -147,6 +147,27 @@ export class ConsoleBuffer {
     )
   }
 
+  async #rerenderBuffer() {
+    if (this.#buffer === null) return
+    this.#highlights = []
+    const lines: string[] = this.#src.flatMap((consoleMessage, _, array) => {
+      const [itemLines, itemHighlights] = consoleMessage.render()
+      this.#highlights.push(...itemHighlights.map((highlight) => ({
+        ...highlight,
+        line: array.length,
+      })))
+      return itemLines
+    })
+    await this.#buffer.setOption('modifiable', true)
+      await this.#buffer.setLines(lines, {
+        start: 0,
+        end: -1,
+        strictIndexing: false,
+      })
+    this.#applyHighlights()
+    await this.#buffer.setOption('modifiable', false)
+  }
+
   close = async () => {
     const result = this.#plugin.nvim.call('nvim_buf_delete', [
       this.#buffer!.id,
