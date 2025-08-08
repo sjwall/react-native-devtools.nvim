@@ -18,6 +18,10 @@ export class TargetConnection {
   #url: string
   #consoleBuffer: ConsoleBuffer | null = null
 
+  get consoleBuffer() {
+    return this.#consoleBuffer
+  }
+
   constructor(plugin: NvimPlugin, logger: Logger, target: Target, url: string) {
     this.#plugin = plugin
     this.#logger = logger
