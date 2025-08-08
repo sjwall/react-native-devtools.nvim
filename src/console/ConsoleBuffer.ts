@@ -10,8 +10,7 @@ import {createConsoleBuffer} from '../utils/createConsoleBuffer'
 import {parseUrl} from '../utils/parseUrl'
 import {ConsoleMessage} from './ConsoleMessage'
 import {ConsoleMessageLog} from './ConsoleMessageLog'
-
-type BufferHighlightLine = Omit<BufferHighlight, 'line'>
+import {ConsoleMessageStatic} from './ConsoleMessageStatic'
 
 export class ConsoleBuffer {
   #url: string
@@ -72,19 +71,8 @@ export class ConsoleBuffer {
               }
 
               const consoleMessage = new ConsoleMessageLog(event, this.#ns)
-              this.#src.push(consoleMessage)
 
-              const [messages, highlights] = consoleMessage.render()
-              await Promise.allSettled(
-                messages.map((message, index) =>
-                  this.appendToBuffer(
-                    message,
-                    ...highlights
-                      .filter(({line}) => line === index)
-                      .map(({line, ...rest}) => rest),
-                  ),
-                ),
-              )
+              await this.appendToBuffer(consoleMessage)
             } else {
               await this.appendToBuffer(
                 `unhandled method ${result.method ?? 'no method'}`,
@@ -92,12 +80,16 @@ export class ConsoleBuffer {
             }
           } catch (e) {
             const message = `Failed to process message - ${e.message}: ${event.type} - ${String(event.data)}`
-            await this.appendToBuffer(message, {
-              hlGroup: `ReactNativeDevtoolsErrorText`,
-              colStart: 0,
-              colEnd: message.length,
-              srcId: this.#ns,
-            })
+            await this.appendToBuffer(
+              new ConsoleMessageStatic(message, [
+                {
+                  hlGroup: `ReactNativeDevtoolsErrorText`,
+                  colStart: 0,
+                  colEnd: message.length,
+                  srcId: this.#ns,
+                },
+              ]),
+            )
           }
         }
       })()
@@ -112,41 +104,47 @@ export class ConsoleBuffer {
     })
   }
 
-  appendToBuffer = async (
-    line: string,
-    ...highlights: BufferHighlightLine[]
-  ) => {
-    return this.#queue.add(() => this.#doAppendToBuffer(line, ...highlights))
+  appendToBuffer = async (consoleMessage: ConsoleMessage | string) => {
+    if (typeof consoleMessage === 'string') {
+      consoleMessage = new ConsoleMessageStatic(consoleMessage)
+    }
+    return this.#queue.add(() => this.#doAppendToBuffer(consoleMessage))
   }
 
-  #doAppendToBuffer = async (
-    line: string,
-    ...highlights: BufferHighlightLine[]
-  ) => {
+  #doAppendToBuffer = async (consoleMessage: ConsoleMessage) => {
     if (this.#buffer === null) return
-    let lines = await this.#buffer.lines
+
+    const [messages, highlights] = consoleMessage.render()
+    const linesLength = await this.#buffer.length
+
     await this.#buffer.setOption('modifiable', true)
-    if (lines.length === 1 && lines[0] === '') {
-      lines = [line]
+    // Empty buffer has 1 line so if no cached messages clear the buffer
+    if (this.#src.length === 0) {
+      await this.#buffer.setLines(messages, {
+        start: 0,
+        end: -1,
+        strictIndexing: false,
+      })
     } else {
-      lines.push(line)
+      await this.#buffer.append(messages)
     }
-    await this.#buffer.setLines(lines, {
-      start: 0,
-      end: -1,
-      strictIndexing: false,
-    })
-    this.#buffer.clearNamespace({nsId: this.#ns})
+
     this.#highlights.push(
       ...highlights.map((highlight) => ({
         ...highlight,
-        line: lines.length - 1,
+        line: linesLength - (this.#src.length === 0 ? 1 : 0),
       })),
     )
+    this.#applyHighlights()
+    await this.#buffer.setOption('modifiable', false)
+    this.#src.push(consoleMessage)
+  }
+
+  async #applyHighlights() {
+    this.#buffer!.clearNamespace({nsId: this.#ns})
     await Promise.allSettled(
       this.#highlights.map((item) => this.#buffer!.addHighlight(item)),
     )
-    await this.#buffer.setOption('modifiable', false)
   }
 
   close = async () => {
@@ -155,6 +153,8 @@ export class ConsoleBuffer {
       {},
     ])
     this.#buffer = null
+    this.#highlights = []
+    this.#src = []
     return result
   }
 }
