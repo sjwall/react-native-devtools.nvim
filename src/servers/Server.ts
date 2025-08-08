@@ -19,6 +19,10 @@ export class Server {
 
   #connections: TargetConnection[] = []
 
+  get connections() {
+    return [...this.#connections]
+  }
+
   #plugin: NvimPlugin
   #logger: Logger
 

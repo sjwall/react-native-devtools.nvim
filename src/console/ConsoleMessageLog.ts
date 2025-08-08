@@ -1,7 +1,7 @@
 import {Runtime} from 'react-native-devtools-frontend'
 import {BufferHighlight} from 'neovim/lib/api/Buffer'
 import {ConsoleMessage} from './ConsoleMessage'
-import {ConsoleObject} from './ConsoleObject'
+import {ConsoleObject, Expandable} from './ConsoleObject'
 import {renderConsoleObject} from './renderConsoleObject'
 
 export class ConsoleMessageLog implements ConsoleMessage {
@@ -23,8 +23,9 @@ export class ConsoleMessageLog implements ConsoleMessage {
     )
   }
 
-  render = (): [string[], BufferHighlight[]] => {
+  render = (): [string[], BufferHighlight[], Expandable[]] => {
     const lines: string[] = []
+    const expandables: Expandable[] = []
     let currentLine = ''
     const highlights: BufferHighlight[] = []
 
@@ -47,7 +48,10 @@ export class ConsoleMessageLog implements ConsoleMessage {
     )
 
     this.#parts.forEach((item) => {
-      let [partLines, partHighlights] = renderConsoleObject(item, this.#ns)
+      let [partLines, partHighlights, partExpandables] = renderConsoleObject(
+        item,
+        this.#ns,
+      )
       if (partLines[0] === 'force-new-line') {
         partLines = partLines.slice(1)
         lines.push(currentLine)
@@ -63,6 +67,14 @@ export class ConsoleMessageLog implements ConsoleMessage {
             line: lines.length,
           })),
         )
+        expandables.push(
+          ...partExpandables.map((expandable) => ({
+            line: expandable.line + lines.length,
+            colStart: currentLine.length + join.length + expandable.colStart,
+            colEnd: currentLine.length + join.length + expandable.colEnd,
+            item: expandable.item,
+          })),
+        )
         currentLine += join + partLines[0]
       } else {
         if (currentLine != '') {
@@ -75,13 +87,21 @@ export class ConsoleMessageLog implements ConsoleMessage {
             line: (line ?? 0) + lines.length,
           })),
         )
+        expandables.push(
+          ...partExpandables.map((expandable) => ({
+            line: expandable.line + lines.length,
+            colStart: expandable.colStart,
+            colEnd: expandable.colEnd,
+            item: expandable.item,
+          })),
+        )
         lines.push(...partLines)
       }
     })
     if (currentLine != '') {
       lines.push(currentLine)
     }
-    return [lines, highlights]
+    return [lines, highlights, expandables]
   }
 
   #appendHighlightGroup = (

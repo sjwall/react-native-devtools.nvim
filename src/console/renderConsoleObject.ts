@@ -1,26 +1,41 @@
 import {Runtime} from 'react-native-devtools-frontend'
 import {BufferHighlight} from 'neovim/lib/api/Buffer'
-import {ConsoleObject} from './ConsoleObject'
+import {ConsoleObject, Expandable} from './ConsoleObject'
 
 export function renderConsoleObject(
   item: ConsoleObject,
   srcId: number,
   indent: '' | '  ' = '',
-): [string[], BufferHighlight[]] {
+): [string[], BufferHighlight[], Expandable[]] {
   const lines: string[] = []
   const highlights: BufferHighlight[] = []
   const value = (item as Runtime.RemoteObject).value ?? item.description
+  const expandables: Expandable[] = []
 
   if (item.type === 'string') {
-    const newLineIndex = value.indexOf('\n')
+    const newLineIndex = (value as string).indexOf('\n')
     if (newLineIndex > -1) {
-      const [firstLine, ...rest] = value.split('\n')
+      const [firstLine, ...rest] = (value as string).split('\n')
       if (item.expanded) {
         lines.push(`▲${firstLine}`)
         lines.push(...rest)
+        expandables.push(
+          ...rest.map((restLine, index) => ({
+            line: index + 1,
+            colStart: 0,
+            colEnd: restLine.length,
+            item,
+          })),
+        )
       } else {
-        lines.push(`▼${firstLine}`)
+        lines.push(`▼${firstLine}...`)
       }
+      expandables.push({
+        line: 0,
+        colStart: 0,
+        colEnd: lines[0].length,
+        item,
+      })
       lines.forEach((line, index) => {
         highlights.push({
           hlGroup: 'ReactNativeDevtoolsConsoleItemString',
@@ -64,6 +79,12 @@ export function renderConsoleObject(
     ) {
       if (item.expanded) {
         lines.push(`▲[${description}]`)
+        expandables.push({
+          line: 0,
+          colStart: 0,
+          colEnd: lines[0].length,
+          item,
+        })
         highlights.push({
           hlGroup: 'ReactNativeDevtoolsConsoleItemObject',
           line: lines.length - 1,
@@ -72,14 +93,28 @@ export function renderConsoleObject(
           srcId,
         })
         // TODO render properties
-        lines.push(
-          ...(
-            (item as Runtime.RemoteObject).preview ??
-            (item as Runtime.ObjectPreview)
-          ).properties.map(({name}) => `${indent}  ${name}`),
+        const properties = (
+          (item as Runtime.RemoteObject).preview ??
+          (item as Runtime.ObjectPreview)
+        ).properties
+        const baseLine = lines.length
+        lines.push(...properties.map(({name}) => `${indent}  ${name}`))
+        expandables.push(
+          ...properties.map((_, index) => ({
+            line: index,
+            colStart: lines[baseLine + index].length - indent.length - 2,
+            colEnd: lines[baseLine + index].length,
+            item,
+          })),
         )
       } else {
         lines.push(`▼[${description}]`)
+        expandables.push({
+          line: 0,
+          colStart: 0,
+          colEnd: lines[0].length,
+          item,
+        })
         highlights.push({
           hlGroup: 'ReactNativeDevtoolsConsoleItemObject',
           line: lines.length - 1,
@@ -102,5 +137,5 @@ export function renderConsoleObject(
     lines.push('force-new-line')
     lines.push(JSON.stringify(item))
   }
-  return [lines, highlights]
+  return [lines, highlights, expandables]
 }

@@ -32,4 +32,24 @@ module.exports = async (plugin: NvimPlugin) => {
       await server?.disconnectTarget(target)
     },
   )
+
+  plugin.registerFunction('RNDConsoleExpandToggle', async () => {
+    const currentBuffer = await plugin.nvim.buffer
+    if (
+      (await currentBuffer.getOption('filetype')) !==
+      'react-native-devtools-console'
+    ) {
+      return
+    }
+    for (let i = 0; i < managerServers.servers.length; i++) {
+      const server = managerServers.servers[i]
+      for (let j = 0; j < server.connections.length; j++) {
+        const connection = server.connections[j]
+        if (connection.consoleBuffer?.buffer === currentBuffer.id) {
+          await connection.consoleBuffer.onToggleExpand()
+          return
+        }
+      }
+    }
+  })
 }

@@ -11,6 +11,7 @@ import {parseUrl} from '../utils/parseUrl'
 import {ConsoleMessage} from './ConsoleMessage'
 import {ConsoleMessageLog} from './ConsoleMessageLog'
 import {ConsoleMessageStatic} from './ConsoleMessageStatic'
+import {Expandable} from './ConsoleObject'
 
 export class ConsoleBuffer {
   #url: string
@@ -22,7 +23,11 @@ export class ConsoleBuffer {
   #queue = new PQueue({concurrency: 1})
   #src: ConsoleMessage[] = []
   #buffer: Buffer | null = null
+  get buffer() {
+    return this.#buffer?.id
+  }
   #highlights: BufferHighlight[] = []
+  #expandables: Expandable[] = []
   #ns!: number
 
   constructor(
@@ -44,6 +49,10 @@ export class ConsoleBuffer {
     this.#buffer = await createConsoleBuffer(this.#plugin)
     const [_, path] = parseUrl(this.#url)
     this.#buffer.name = `rndt://${path}/${this.#target.deviceName}/${this.#target.appId}`
+
+    this.#plugin.nvim.command(
+      'nmap <buffer> <silent> <CR> :call RNDConsoleExpandToggle()<CR>',
+    )
 
     this.#ws.onmessage = (event) => {
       ;(async () => {
@@ -114,7 +123,7 @@ export class ConsoleBuffer {
   #doAppendToBuffer = async (consoleMessage: ConsoleMessage) => {
     if (this.#buffer === null) return
 
-    const [messages, highlights] = consoleMessage.render()
+    const [messages, highlights, expandables] = consoleMessage.render()
     const linesLength = await this.#buffer.length
 
     await this.#buffer.setOption('modifiable', true)
@@ -138,6 +147,12 @@ export class ConsoleBuffer {
           (highlight.line ?? 0),
       })),
     )
+    this.#expandables.push(
+      ...expandables.map((expandable) => ({
+        ...expandable,
+        line: linesLength + expandable.line,
+      })),
+    )
     this.#applyHighlights()
     await this.#buffer.setOption('modifiable', false)
     this.#src.push(consoleMessage)
@@ -153,22 +168,45 @@ export class ConsoleBuffer {
   async #rerenderBuffer() {
     if (this.#buffer === null) return
     this.#highlights = []
-    const lines: string[] = this.#src.flatMap((consoleMessage, _, array) => {
-      const [itemLines, itemHighlights] = consoleMessage.render()
-      this.#highlights.push(...itemHighlights.map((highlight) => ({
-        ...highlight,
-        line: array.length,
-      })))
-      return itemLines
+    this.#expandables = []
+    const lines: string[] = []
+    this.#src.forEach((consoleMessage) => {
+      const [itemLines, itemHighlights, itemExpandables] =
+        consoleMessage.render()
+      this.#highlights.push(
+        ...itemHighlights.map((highlight) => ({
+          ...highlight,
+          line: (highlight.line ?? 0) + lines.length,
+        })),
+      )
+      this.#expandables.push(
+        ...itemExpandables.map((expandable) => ({
+          ...expandable,
+          line: expandable.line + lines.length,
+        })),
+      )
+      lines.push(...itemLines)
     })
     await this.#buffer.setOption('modifiable', true)
-      await this.#buffer.setLines(lines, {
-        start: 0,
-        end: -1,
-        strictIndexing: false,
-      })
+    await this.#buffer.setLines(lines, {
+      start: 0,
+      end: -1,
+      strictIndexing: false,
+    })
     this.#applyHighlights()
     await this.#buffer.setOption('modifiable', false)
+  }
+
+  async onToggleExpand() {
+    const cursor = await (await this.#plugin.nvim.window).cursor
+    const [line, col] = cursor
+    const item = this.#expandables.find(
+      (expandable) => expandable.line === line - 1,
+    )
+    if (item) {
+      item.item.expanded = !item.item.expanded
+      await this.#rerenderBuffer()
+    }
   }
 
   close = async () => {
@@ -179,6 +217,7 @@ export class ConsoleBuffer {
     this.#buffer = null
     this.#highlights = []
     this.#src = []
+    this.#expandables = []
     return result
   }
 }
