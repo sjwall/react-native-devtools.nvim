@@ -132,7 +132,10 @@ export class ConsoleBuffer {
     this.#highlights.push(
       ...highlights.map((highlight) => ({
         ...highlight,
-        line: linesLength - (this.#src.length === 0 ? 1 : 0),
+        line:
+          linesLength -
+          (this.#src.length === 0 ? 1 : 0) +
+          (highlight.line ?? 0),
       })),
     )
     this.#applyHighlights()
