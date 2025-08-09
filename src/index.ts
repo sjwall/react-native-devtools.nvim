@@ -28,11 +28,41 @@ module.exports = async (plugin: NvimPlugin) => {
 
   plugin.registerFunction(
     'RNDConsoleClose',
-    async ([url, target]: [string, string]) => {
-      const server = managerServers.find(url ?? 'http://localhost:8081')
-      await server?.disconnectTarget(target)
+    async (args: [string | number, string] | undefined) => {
+      let [url, target]: [string | number | undefined, string | undefined] = [
+        undefined,
+        undefined,
+      ]
+      if (args) {
+        ;[url, target] = args
+      }
+      if (typeof url !== 'number') {
+        const server = managerServers.find(url ?? 'http://localhost:8081')
+        if (server) {
+          if (target) {
+            await server?.disconnectTarget(target)
+          } else {
+            await Promise.allSettled(
+              server.connections.map((connection) => connection.close()),
+            )
+          }
+        }
+      } else {
+        managerServers.servers.find((server) => {
+          return server.connections.find((connection) => {
+            if (connection.consoleBuffer?.buffer === url) {
+              connection.close()
+              return true
+            }
+          })
+        })
+      }
     },
   )
+
+  //   plugin.registerAutocmd('BufDelete', async ([bufferId]: [number]) => {
+  // info(plugin, 'buffer removed')
+  //   }, { pattern: '*'})
 
   plugin.registerFunction('RNDConsoleExpandToggle', async () => {
     const currentBuffer = await getCurrentConsoleBuffer(plugin)
