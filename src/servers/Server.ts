@@ -61,6 +61,10 @@ export class Server {
   }
 
   disconnectTarget = async (targetId: string) => {
-    return this.findConnection(targetId)?.close()
+    const index = this.connections.findIndex((item) => item.target.id = targetId)
+    if (index >= 0) {
+      const [connection] = this.connections.splice(index, 1)
+      connection.close()
+    }
   }
 }
