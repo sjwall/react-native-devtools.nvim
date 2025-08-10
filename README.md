@@ -14,7 +14,7 @@ More coming soon...
 -- lazy.nvim
 {
   'sjwall/react-native-devtools.nvim',
-  build = 'chmod +x build.sh && ./build.sh',
+  build = './build.sh',
   event = 'VeryLazy',
   dependencies = {
     'nvim-lua/plenary.nvim',
