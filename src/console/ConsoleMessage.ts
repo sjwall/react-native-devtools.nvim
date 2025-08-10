@@ -1,6 +1,6 @@
 import {BufferHighlight} from 'neovim/lib/api/Buffer'
-import {Expandable} from './ConsoleObject'
+import {ExpandableRef} from './ConsoleObject'
 
 export type ConsoleMessage = {
-  render(): [string[], BufferHighlight[], Expandable[]]
+  render(): [string[], BufferHighlight[], ExpandableRef[]]
 }

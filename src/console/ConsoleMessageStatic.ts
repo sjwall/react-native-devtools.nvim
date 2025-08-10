@@ -1,6 +1,6 @@
 import {BufferHighlight} from 'neovim/lib/api/Buffer'
 import {ConsoleMessage} from './ConsoleMessage'
-import {Expandable} from './ConsoleObject'
+import {ExpandableRef} from './ConsoleObject'
 
 export class ConsoleMessageStatic implements ConsoleMessage {
   #lines: string[]
@@ -11,7 +11,7 @@ export class ConsoleMessageStatic implements ConsoleMessage {
     this.#highlights = highlights
   }
 
-  render = (): [string[], BufferHighlight[], Expandable[]] => {
+  render = (): [string[], BufferHighlight[], ExpandableRef[]] => {
     return [this.#lines, this.#highlights, []]
   }
 }

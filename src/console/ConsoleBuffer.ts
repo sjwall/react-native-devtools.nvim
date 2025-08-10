@@ -11,7 +11,7 @@ import {parseUrl} from '../utils/parseUrl'
 import {ConsoleMessage} from './ConsoleMessage'
 import {ConsoleMessageLog} from './ConsoleMessageLog'
 import {ConsoleMessageStatic} from './ConsoleMessageStatic'
-import {Expandable} from './ConsoleObject'
+import {ExpandableRef} from './ConsoleObject'
 
 export class ConsoleBuffer {
   #url: string
@@ -27,7 +27,7 @@ export class ConsoleBuffer {
     return this.#buffer?.id
   }
   #highlights: BufferHighlight[] = []
-  #expandables: Expandable[] = []
+  #expandables: ExpandableRef[] = []
   #ns!: number
 
   constructor(

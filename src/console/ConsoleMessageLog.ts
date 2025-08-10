@@ -1,13 +1,13 @@
 import {Runtime} from 'react-native-devtools-frontend'
 import {BufferHighlight} from 'neovim/lib/api/Buffer'
 import {ConsoleMessage} from './ConsoleMessage'
-import {ConsoleObject, Expandable} from './ConsoleObject'
-import {renderConsoleObject} from './renderConsoleObject'
+import {ConsoleObject, Expandable, ExpandableRef} from './ConsoleObject'
+import {renderObjectPreview, renderRemoteObject} from './renderer'
 
 export class ConsoleMessageLog implements ConsoleMessage {
   #type: Runtime.ConsoleAPICalledEventType
   #timestamp: Runtime.Timestamp
-  #parts: ConsoleObject[]
+  #parts: Runtime.RemoteObject[]
   #ns: number
 
   constructor(event: Runtime.ConsoleAPICalledEvent, namespace: number) {
@@ -23,9 +23,9 @@ export class ConsoleMessageLog implements ConsoleMessage {
     )
   }
 
-  render = (): [string[], BufferHighlight[], Expandable[]] => {
+  render = (): [string[], BufferHighlight[], ExpandableRef[]] => {
     const lines: string[] = []
-    const expandables: Expandable[] = []
+    const expandables: ExpandableRef[] = []
     let currentLine = ''
     const highlights: BufferHighlight[] = []
 
@@ -48,7 +48,7 @@ export class ConsoleMessageLog implements ConsoleMessage {
     )
 
     this.#parts.forEach((item) => {
-      let [partLines, partHighlights, partExpandables] = renderConsoleObject(
+      let [partLines, partHighlights, partExpandables] = renderRemoteObject(
         item,
         this.#ns,
       )
@@ -62,8 +62,11 @@ export class ConsoleMessageLog implements ConsoleMessage {
         highlights.push(
           ...partHighlights.map(({colStart, colEnd, ...highlight}) => ({
             ...highlight,
-            colStart: currentLine.length + join.length,
-            colEnd: currentLine.length + join.length + partLines[0].length,
+            colStart: currentLine.length + join.length + (colStart ?? 0),
+            colEnd:
+              currentLine.length +
+              join.length +
+              (colEnd ?? partLines[0].length),
             line: lines.length,
           })),
         )
