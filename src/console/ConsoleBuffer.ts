@@ -205,7 +205,10 @@ export class ConsoleBuffer {
     const cursor = await (await this.#plugin.nvim.window).cursor
     const [line, col] = cursor
     const item = this.#expandables.find(
-      (expandable) => expandable.line === line - 1 && expandable.colStart <= col && expandable.colEnd >= col,
+      (expandable) =>
+        expandable.line === line - 1 &&
+        col >= expandable.colStart &&
+        col - 1 <= expandable.colEnd,
     )
     if (item) {
       item.item.expanded = !item.item.expanded
