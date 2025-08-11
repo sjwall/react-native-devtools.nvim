@@ -103,15 +103,16 @@ export function renderNumber(
   srcId: number,
   name?: string,
 ): RenderResult {
-  const result = `${renderName(name)}${value}`
+  const renderedName = renderName(name)
+  const renderedValue = String(value)
   return [
-    [result],
+    [`${renderedName}${renderedValue}`],
     [
       {
         hlGroup: 'ReactNativeDevtoolsConsoleItemNumber',
         line: 0,
-        colStart: 0,
-        colEnd: result.length,
+        colStart: renderedName.length,
+        colEnd: renderName.length + renderedValue.length,
         srcId,
       },
     ],

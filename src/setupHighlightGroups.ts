@@ -21,5 +21,6 @@ hi default link ReactNativeDevtoolsInfoText Normal
 hi default link ReactNativeDevtoolsLogText Normal
 hi default link ReactNativeDevtoolsDebugText Normal
 hi default link ReactNativeDevtoolsTraceText Normal
+hi default ReactNativeDevtoolsConsoleItemNumber guifg=#04a5e5
 `)
 }
