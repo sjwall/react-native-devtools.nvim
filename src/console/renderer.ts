@@ -46,8 +46,9 @@ export function renderString(
     const [firstLine, ...rest] = value.split('\n')
     const prefix = `${renderExpanded(item.expanded)}${renderName(name)}`
     if (item.expanded) {
-      lines.push(`${prefix}${firstLine}`)
+      lines.push(`${prefix}"${firstLine}`)
       lines.push(...rest)
+      lines[lines.length - 1] += '"'
       expandables.push(
         ...rest.map((restLine, index) => ({
           line: index + 1,
@@ -57,7 +58,7 @@ export function renderString(
         })),
       )
     } else {
-      lines.push(`${prefix}${firstLine}...`)
+      lines.push(`${prefix}"${firstLine}"...`)
     }
     expandables.push({
       line: 0,
@@ -65,7 +66,17 @@ export function renderString(
       colEnd: lines[0].length,
       item,
     })
+    highlights.push({
+      hlGroup: 'ReactNativeDevtoolsConsoleItemString',
+      line: 0,
+      colStart: prefix.length,
+      colEnd: lines[0].length - (item.expanded ? 3 : 0),
+      srcId,
+    })
     lines.forEach((line, index) => {
+      if (index === 0) {
+        return
+      }
       highlights.push({
         hlGroup: 'ReactNativeDevtoolsConsoleItemString',
         line: index,
@@ -89,10 +100,10 @@ export function renderString(
       hlGroup: 'ReactNativeDevtoolsConsoleItemString',
       line: lines.length,
       colStart: outputName.length,
-      colEnd: outputName.length + value.length,
+      colEnd: outputName.length + value.length + 2,
       srcId,
     })
-    lines.push(`${outputName}${value}`)
+    lines.push(`${outputName}"${value}"`)
   }
   return [lines, highlights, expandables]
 }
