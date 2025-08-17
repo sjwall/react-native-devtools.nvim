@@ -53,24 +53,24 @@ export function renderString(
         ...rest.map((restLine, index) => ({
           line: index + 1,
           colStart: 0,
-          colEnd: restLine.length,
+          colEnd: restLine.length - 1 + (index === rest.length - 1 ? 1 : 0),
           item,
         })),
       )
     } else {
-      lines.push(`${prefix}"${firstLine}"...`)
+      lines.push(`${prefix}"${firstLine}..."`)
     }
-    expandables.push({
+    expandables.splice(0, 0, {
       line: 0,
       colStart: 0,
-      colEnd: lines[0].length,
+      colEnd: lines[0].length - 1,
       item,
     })
     highlights.push({
       hlGroup: 'ReactNativeDevtoolsConsoleItemString',
       line: 0,
       colStart: prefix.length,
-      colEnd: lines[0].length - (item.expanded ? 3 : 0),
+      colEnd: lines[0].length - 1,
       srcId,
     })
     lines.forEach((line, index) => {
@@ -81,7 +81,7 @@ export function renderString(
         hlGroup: 'ReactNativeDevtoolsConsoleItemString',
         line: index,
         colStart: 0,
-        colEnd: line.length,
+        colEnd: line.length - 1,
         srcId,
       })
     })
@@ -92,18 +92,19 @@ export function renderString(
         hlGroup: 'ReactNativeDevtoolsConsoleItemName',
         line: lines.length,
         colStart: 0,
-        colEnd: outputName.length,
+        colEnd: outputName.length - 1,
         srcId,
       })
     }
+    lines.push(`${outputName}"${value}"`)
     highlights.push({
       hlGroup: 'ReactNativeDevtoolsConsoleItemString',
-      line: lines.length,
+      line: lines.length - 1,
       colStart: outputName.length,
-      colEnd: outputName.length + value.length + 2,
+      // FIXME why no -1 here?
+      colEnd: lines[lines.length - 1].length,
       srcId,
     })
-    lines.push(`${outputName}"${value}"`)
   }
   return [lines, highlights, expandables]
 }
