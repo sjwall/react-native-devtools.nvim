@@ -8,7 +8,8 @@
     "lint": "tsc",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "dev:build": "yarn run build --watch",
-    "dev": "yarn dev:tsc & yarn dev:build"
+    "dev": "yarn dev:tsc & yarn dev:build",
+    "test": "vitest"
   },
   "dependencies": {
     "@vscode/debugadapter": "^1.68.0",
@@ -24,6 +25,7 @@
     "@types/node": "22",
     "@types/ws": "^8.18.1",
     "prettier": "^3.6.2",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vitest": "^3.2.4"
   }
 }
