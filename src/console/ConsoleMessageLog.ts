@@ -1,8 +1,8 @@
 import {Runtime} from 'react-native-devtools-frontend'
 import {BufferHighlight} from 'neovim/lib/api/Buffer'
 import {ConsoleMessage} from './ConsoleMessage'
-import {ConsoleObject, Expandable, ExpandableRef} from './ConsoleObject'
-import {renderObjectPreview, renderRemoteObject} from './renderer'
+import {ExpandableRef} from './ConsoleObject'
+import {renderRemoteObjects} from './renderer'
 
 export class ConsoleMessageLog implements ConsoleMessage {
   #type: Runtime.ConsoleAPICalledEventType
@@ -47,64 +47,17 @@ export class ConsoleMessageLog implements ConsoleMessage {
       `ReactNativeDevtools${type}Title`,
     )
 
-    this.#parts.forEach((item) => {
-      let [partLines, partHighlights, partExpandables] = renderRemoteObject(
-        item,
-        this.#ns,
-      )
-      if (partLines[0] === 'force-new-line') {
-        partLines = partLines.slice(1)
-        lines.push(currentLine)
-        currentLine = ''
-      }
-      if (partLines.length === 1) {
-        const join = currentLine === '' ? '' : ' '
-        highlights.push(
-          ...partHighlights.map(({colStart, colEnd, ...highlight}) => ({
-            ...highlight,
-            colStart: currentLine.length + join.length + (colStart ?? 0),
-            colEnd:
-              currentLine.length +
-              join.length +
-              (colEnd ?? partLines[0].length),
-            line: lines.length,
-          })),
-        )
-        expandables.push(
-          ...partExpandables.map((expandable) => ({
-            line: expandable.line + lines.length,
-            colStart: currentLine.length + join.length + expandable.colStart,
-            colEnd: currentLine.length + join.length + expandable.colEnd,
-            item: expandable.item,
-          })),
-        )
-        currentLine += join + partLines[0]
-      } else {
-        if (currentLine != '') {
-          lines.push(currentLine)
-          currentLine = ''
-        }
-        highlights.push(
-          ...partHighlights.map(({line, ...rest}) => ({
-            ...rest,
-            line: (line ?? 0) + lines.length,
-          })),
-        )
-        expandables.push(
-          ...partExpandables.map((expandable) => ({
-            line: expandable.line + lines.length,
-            colStart: expandable.colStart,
-            colEnd: expandable.colEnd,
-            item: expandable.item,
-          })),
-        )
-        lines.push(...partLines)
-      }
-    })
-    if (currentLine != '') {
-      lines.push(currentLine)
-    }
-    return [lines, highlights, expandables]
+    const [partLines, partHighlights, partExpandables] = renderRemoteObjects(
+      currentLine,
+      this.#parts,
+      this.#ns,
+    )
+
+    return [
+      partLines,
+      [...highlights, ...partHighlights],
+      [...expandables, ...partExpandables],
+    ]
   }
 
   #appendHighlightGroup = (
@@ -119,6 +72,7 @@ export class ConsoleMessageLog implements ConsoleMessage {
       hlGroup,
       line: lines.length,
       colStart: currentValue.length + join.length,
+      // FIXME why no - 1?
       colEnd: currentValue.length + join.length + value.length,
       srcId: this.#ns,
     })

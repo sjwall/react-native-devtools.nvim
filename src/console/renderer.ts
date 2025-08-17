@@ -245,3 +245,77 @@ export function renderRemoteObject(
   }
   return [lines, highlights, expandables]
 }
+
+export function renderRemoteObjects(
+  base: string,
+  items: Runtime.RemoteObject[],
+  ns: number,
+): RenderResult {
+  const lines: string[] = []
+  const expandables: ExpandableRef[] = []
+  let currentLine = base
+  const highlights: BufferHighlight[] = []
+
+  items.forEach((item) => {
+    let [itemLines, itemHighlights, itemExpandables] = renderRemoteObject(
+      item,
+      ns,
+    )
+    if (itemLines[0] === 'force-new-line') {
+      itemLines = itemLines.slice(1)
+      lines.push(currentLine)
+      currentLine = ''
+    }
+    if (itemLines.length === 1) {
+      const join = currentLine === '' ? '' : ' '
+      highlights.push(
+        ...itemHighlights.map(({colStart, colEnd, hlGroup, srcId}) => ({
+          srcId,
+          hlGroup,
+          colStart:
+            currentLine.length +
+            join.length +
+            (typeof colStart === 'number' ? colStart : 0),
+          colEnd:
+            currentLine.length +
+            join.length +
+            (typeof colEnd === 'number' ? colEnd : itemLines[0].length),
+          line: lines.length,
+        })),
+      )
+      expandables.push(
+        ...itemExpandables.map((expandable) => ({
+          line: expandable.line + lines.length,
+          colStart: currentLine.length + join.length + expandable.colStart,
+          colEnd: currentLine.length + join.length + expandable.colEnd,
+          item: expandable.item,
+        })),
+      )
+      currentLine += join + itemLines[0]
+    } else {
+      if (currentLine != '') {
+        lines.push(currentLine)
+        currentLine = ''
+      }
+      highlights.push(
+        ...itemHighlights.map(({line, ...rest}) => ({
+          ...rest,
+          line: (typeof line === 'number' ? line : 0) + lines.length,
+        })),
+      )
+      expandables.push(
+        ...itemExpandables.map((expandable) => ({
+          line: expandable.line + lines.length,
+          colStart: expandable.colStart,
+          colEnd: expandable.colEnd,
+          item: expandable.item,
+        })),
+      )
+      lines.push(...itemLines)
+    }
+  })
+  if (currentLine != '') {
+    lines.push(currentLine)
+  }
+  return [lines, highlights, expandables]
+}

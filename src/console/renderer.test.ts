@@ -1,5 +1,5 @@
 import {expect, test, describe} from 'vitest'
-import {renderString} from './renderer'
+import {renderRemoteObjects, renderString} from './renderer'
 
 describe('renderString', () => {
   test('single line', () => {
@@ -19,7 +19,9 @@ describe('renderString', () => {
   })
 
   test('single line with name', () => {
-    expect(renderString('single line string', {}, 2, 'field name')).toStrictEqual([
+    expect(
+      renderString('single line string', {}, 2, 'field name'),
+    ).toStrictEqual([
       ['field name: "single line string"'],
       [
         {
@@ -58,7 +60,9 @@ describe('renderString', () => {
   })
 
   test('multi line expanded', () => {
-    expect(renderString('multi\nline\nstring', {expanded: true}, 2)).toStrictEqual([
+    expect(
+      renderString('multi\nline\nstring', {expanded: true}, 2),
+    ).toStrictEqual([
       ['▲"multi', 'line', 'string"'],
       [
         {
@@ -84,31 +88,73 @@ describe('renderString', () => {
         },
       ],
       [
-     {
-       "colEnd": 6,
-       "colStart": 0,
-       "item": {
-         "expanded": true,
-       },
-       "line": 0,
-     },
-     {
-       "colEnd": 3,
-       "colStart": 0,
-       "item": {
-         "expanded": true,
-       },
-       "line": 1,
-     },
-     {
-       "colEnd": 6,
-       "colStart": 0,
-       "item": {
-         "expanded": true,
-       },
-       "line": 2,
-     },
-   ],
+        {
+          colEnd: 6,
+          colStart: 0,
+          item: {
+            expanded: true,
+          },
+          line: 0,
+        },
+        {
+          colEnd: 3,
+          colStart: 0,
+          item: {
+            expanded: true,
+          },
+          line: 1,
+        },
+        {
+          colEnd: 6,
+          colStart: 0,
+          item: {
+            expanded: true,
+          },
+          line: 2,
+        },
+      ],
+    ])
+  })
+
+  test('renderRemoteObjects', () => {
+    expect(
+      renderRemoteObjects(
+        '09:28:29 Debug',
+        [
+          {type: 'string', value: 'multi\nline\nstring'},
+          {type: 'string', description: 'single line string'},
+        ],
+        2,
+      ),
+    ).toStrictEqual([
+      ['09:28:29 Debug ▼"multi..." "single line string'],
+      [
+        {
+          colEnd: 25,
+          colStart: 16,
+          hlGroup: 'ReactNativeDevtoolsConsoleItemString',
+          line: 0,
+          srcId: 2,
+        },
+        {
+          colEnd: 46,
+          colStart: 27,
+          hlGroup: 'ReactNativeDevtoolsConsoleItemString',
+          line: 0,
+          srcId: 2,
+        },
+      ],
+      [
+        {
+          colEnd: 25,
+          colStart: 15,
+          item: {
+            type: 'string',
+            value: 'multi\nline\nstring',
+          },
+          line: 0,
+        },
+      ],
     ])
   })
 })
