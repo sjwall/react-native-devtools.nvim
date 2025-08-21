@@ -3,11 +3,11 @@ import {join} from 'node:path'
 import {NvimPlugin} from 'neovim'
 
 export class Logger {
-  #filePath = './log.txt'
+  #filePath = './log.log'
 
   constructor(plugin: NvimPlugin) {
     plugin.nvim.call('stdpath', 'log').then((value) => {
-      this.#filePath = join(value, 'react-native-devtools.txt')
+      this.#filePath = join(value, 'react-native-devtools.log')
     })
   }
 

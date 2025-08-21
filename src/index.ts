@@ -60,10 +60,6 @@ module.exports = async (plugin: NvimPlugin) => {
     },
   )
 
-  //   plugin.registerAutocmd('BufDelete', async ([bufferId]: [number]) => {
-  // info(plugin, 'buffer removed')
-  //   }, { pattern: '*'})
-
   plugin.registerFunction('RNDConsoleExpandToggle', async () => {
     const currentBuffer = await getCurrentConsoleBuffer(plugin)
     if (currentBuffer) {
