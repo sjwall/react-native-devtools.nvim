@@ -12,10 +12,16 @@ export class Logger {
   }
 
   async log(...message: string[]) {
-    await appendFile(this.#filePath, `INFO: ${message.join(' ')}\n`)
+    await appendFile(
+      this.#filePath,
+      `${new Date().toISOString()} INFO: ${message.join(' ')}\n`,
+    )
   }
 
   async trace(...message: string[]) {
-    await appendFile(this.#filePath, `TRACE: ${message.join(' ')}\n`)
+    await appendFile(
+      this.#filePath,
+      `${new Date().toISOString()} TRACE: ${message.join(' ')}\n`,
+    )
   }
 }
