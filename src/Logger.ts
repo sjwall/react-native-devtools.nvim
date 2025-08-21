@@ -3,25 +3,30 @@ import {join} from 'node:path'
 import {NvimPlugin} from 'neovim'
 
 export class Logger {
-  #filePath = './log.log'
+  #filePath: string | undefined
 
   constructor(plugin: NvimPlugin) {
     plugin.nvim.call('stdpath', 'log').then((value) => {
-      this.#filePath = join(value, 'react-native-devtools.log')
+      if (!this.#filePath) {
+        this.#filePath = join(value, 'react-native-devtools.log')
+      }
     })
   }
 
+  async #appendToLogFile(level: 'INFO' | 'TRACE', message: string[]) {
+    if (this.#filePath) {
+      await appendFile(
+        this.#filePath,
+        `${new Date().toISOString()} ${level}: ${message.join(' ')}\n`,
+      )
+    }
+  }
+
   async log(...message: string[]) {
-    await appendFile(
-      this.#filePath,
-      `${new Date().toISOString()} INFO: ${message.join(' ')}\n`,
-    )
+    this.#appendToLogFile('INFO', message)
   }
 
   async trace(...message: string[]) {
-    await appendFile(
-      this.#filePath,
-      `${new Date().toISOString()} TRACE: ${message.join(' ')}\n`,
-    )
+    this.#appendToLogFile('TRACE', message)
   }
 }
