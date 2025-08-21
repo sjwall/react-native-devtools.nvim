@@ -46,6 +46,7 @@ export function setupTargets(
       return []
     }
 
+    await logger.trace(`RNDTargets: found ${result.value.length} targets`)
     return result.value
   })
 }
