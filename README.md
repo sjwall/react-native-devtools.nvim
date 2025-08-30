@@ -19,5 +19,8 @@ More coming soon...
   dependencies = {
     'nvim-lua/plenary.nvim',
   },
+  keys = {
+    { '<leader>sT', '<cmd>Telescope rndt_targets<cr>', desc = '[S]earch React Native [T]argets' },
+  },
 }
 ```

@@ -24,6 +24,7 @@ module.exports = async (plugin: NvimPlugin) => {
         connection.openConsole()
       }
     },
+    {sync: false},
   )
 
   plugin.registerFunction(
@@ -58,21 +59,26 @@ module.exports = async (plugin: NvimPlugin) => {
         })
       }
     },
+    {sync: false},
   )
 
-  plugin.registerFunction('RNDConsoleExpandToggle', async () => {
-    const currentBuffer = await getCurrentConsoleBuffer(plugin)
-    if (currentBuffer) {
-      for (let i = 0; i < managerServers.servers.length; i++) {
-        const server = managerServers.servers[i]
-        for (let j = 0; j < server.connections.length; j++) {
-          const connection = server.connections[j]
-          if (connection.consoleBuffer?.buffer === currentBuffer.id) {
-            await connection.consoleBuffer.onToggleExpand()
-            return
+  plugin.registerFunction(
+    'RNDConsoleExpandToggle',
+    async () => {
+      const currentBuffer = await getCurrentConsoleBuffer(plugin)
+      if (currentBuffer) {
+        for (let i = 0; i < managerServers.servers.length; i++) {
+          const server = managerServers.servers[i]
+          for (let j = 0; j < server.connections.length; j++) {
+            const connection = server.connections[j]
+            if (connection.consoleBuffer?.buffer === currentBuffer.id) {
+              await connection.consoleBuffer.onToggleExpand()
+              return
+            }
           }
         }
       }
-    }
-  })
+    },
+    {sync: false},
+  )
 }
