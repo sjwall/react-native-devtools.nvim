@@ -47,8 +47,16 @@ local run = function(opts)
     if prompt_trimmed ~= previousPrompt then
       previousPrompt = prompt_trimmed
       local success, result = pcall(vim.fn.call, "RNDTargets", {})
-      targetData = result
-      picker:refresh()
+      if result == 0 then
+        vim.notify(
+          "Please run `:UpdateRemotePlugins` and restart Neovim; failed to call React Native Debug Adapter.",
+          vim.log.levels.ERROR,
+          { title = "React Native DevTools" }
+        )
+      else
+        targetData = result
+        picker:refresh()
+      end
     end
   end, 1000)
   picker = pickers.new(opts, {
