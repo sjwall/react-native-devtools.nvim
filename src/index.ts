@@ -81,4 +81,24 @@ module.exports = async (plugin: NvimPlugin) => {
     },
     {sync: false},
   )
+
+  plugin.registerFunction(
+    'RNDConsoleClear',
+    async () => {
+      const currentBuffer = await getCurrentConsoleBuffer(plugin)
+      if (currentBuffer) {
+        for (let i = 0; i < managerServers.servers.length; i++) {
+          const server = managerServers.servers[i]
+          for (let j = 0; j < server.connections.length; j++) {
+            const connection = server.connections[j]
+            if (connection.consoleBuffer?.buffer === currentBuffer.id) {
+              await connection.consoleBuffer.clear()
+              return
+            }
+          }
+        }
+      }
+    },
+    {sync: false},
+  )
 }

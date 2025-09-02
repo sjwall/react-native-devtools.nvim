@@ -53,6 +53,9 @@ export class ConsoleBuffer {
     this.#plugin.nvim.command(
       'nmap <buffer> <silent> <CR> :call RNDConsoleExpandToggle()<CR>',
     )
+    this.#plugin.nvim.command(
+      'nmap <buffer> <silent> <C-c> :call RNDConsoleClear()<CR>',
+    )
 
     this.#plugin.nvim.command(
       `au BufDelete <buffer=${this.#buffer.id}> call RNDConsoleClose(${this.#buffer.id})`,
@@ -214,6 +217,13 @@ export class ConsoleBuffer {
       item.item.expanded = !item.item.expanded
       await this.#rerenderBuffer()
     }
+  }
+
+  async clear() {
+    this.#src = []
+    this.#highlights = []
+    this.#expandables = []
+    return this.#rerenderBuffer()
   }
 
   close = async (deleteBuffer = false) => {
